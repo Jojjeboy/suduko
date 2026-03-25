@@ -94,7 +94,12 @@ const isInitial = (index: number) => {
       >
         {{ num }}
       </button>
-      <button @click="fillNumber(null)" class="pad-btn clear-btn">✕</button>
+      <button @click="fillNumber(null)" class="pad-btn clear-btn" aria-label="Eraser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="eraser-svg">
+          <path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z"></path>
+          <path d="M17 17L7 7"></path>
+        </svg>
+      </button>
     </div>
   </div>
 </template>
@@ -138,8 +143,9 @@ const isInitial = (index: number) => {
 }
 
 .user-number {
-  color: #60a5fa;
+  color: #ffffff;
   font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 
 .number-pad {
@@ -184,6 +190,11 @@ const isInitial = (index: number) => {
 
 .clear-btn:hover {
   background: rgba(239, 68, 68, 0.3);
+}
+
+.eraser-svg {
+  width: 20px;
+  height: 20px;
 }
 
 .initial-cell {

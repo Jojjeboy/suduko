@@ -188,13 +188,13 @@ const startNewGame = (level: Difficulty) => {
   // If there's an active session of a different level, clear it
   clearSession()
   difficulty.value = level
-  
+
   let puzzle: (number | null)[]
   let rating: number
-  
+
   let attempts = 0
   const maxAttempts = 50
-  
+
   do {
     puzzle = sudoku.makepuzzle()
     rating = sudoku.ratepuzzle(puzzle, 4)
@@ -206,7 +206,7 @@ const startNewGame = (level: Difficulty) => {
       (level === 'hard' && rating <= 2.5)
     )
   )
-  
+
   board.value = puzzle.map((v: number | null) => v !== null ? v + 1 : null)
   initialBoard.value = [...board.value]
   isGameActive.value = true
@@ -223,7 +223,7 @@ watch(board, () => {
 const checkGame = () => {
   const currentBoard = board.value.map(v => v !== null ? v - 1 : null)
   const solved = sudoku.solvepuzzle(currentBoard)
-  
+
   if (!solved) {
     showModal({
       title: t('game.error_title') || 'Error',
@@ -231,9 +231,9 @@ const checkGame = () => {
     })
     return
   }
-  
+
   const isCorrectSoFar = currentBoard.every((v, i) => v === null || v === solved[i])
-  
+
   if (!isCorrectSoFar) {
     showModal({
       title: t('game.incorrect_title') || 'Sudoku',
@@ -243,14 +243,14 @@ const checkGame = () => {
     stopTimer()
     clearSession() // Clear session on win
     const isNewRecord = saveBestTime(difficulty.value!, seconds.value)
-    
+
     let message = t('game.congratulations')
     if (isNewRecord) {
       message += ` ${t('game.new_record')} (${formatTime(seconds.value)})`
     } else {
       message += ` (${formatTime(seconds.value)})`
     }
-    
+
     showModal({
       title: t('game.win_title') || 'Congratulations!',
       message: message
@@ -306,20 +306,20 @@ const solveGame = () => {
           </div>
           <div class="header-spacer"></div>
         </div>
-        
-        <SudokuBoard 
-          v-model:board="board" 
+
+        <SudokuBoard
+          v-model:board="board"
           :initial-board="initialBoard"
         />
-        
+
         <div class="game-footer">
-          <button @click="checkGame" class="btn btn-primary compact-btn">
+          <button @click="checkGame" class="btn btn-primary compact-btn check-btn">
             {{ $t('game.check_board') }}
           </button>
-          <button @click="solveGame" class="btn btn-secondary compact-btn">
+          <button @click="solveGame" class="btn btn-secondary compact-btn solve-btn">
             {{ $t('game.solve') }}
           </button>
-          <button @click="isGameActive = false" class="btn btn-secondary compact-btn">
+          <button @click="isGameActive = false" class="btn btn-secondary compact-btn reset-btn">
             {{ $t('game.new_game') }}
           </button>
         </div>
@@ -403,7 +403,7 @@ const solveGame = () => {
   font-family: monospace;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #60a5fa;
+  color: #ffffff;
 }
 
 .best-timer {
@@ -437,25 +437,47 @@ const solveGame = () => {
 }
 
 .compact-btn {
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-  min-width: 100px;
+  padding: 0.6rem 0.5rem;
+  font-size: 0.85rem;
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.compact-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-2px);
+}
+
+.check-btn {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+.check-btn:hover {
+  background: rgba(59, 130, 246, 0.3) !important;
 }
 
 @media (max-width: 400px) {
   .game-container {
     padding: 1rem;
   }
-  
+
   h2 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
   }
-  
+
   .game-footer {
     gap: 0.25rem;
   }
-  
+
   .compact-btn {
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
