@@ -10,7 +10,7 @@
     "medium": "Medel",
     "hard": "Svår",
     "back_to_home": "Tillbaka till start",
-    "check_board": "Kontrollera brädet",
+    "check_board": "Kontrollera",
     "solve": "Lös",
     "new_game": "Nytt spel",
     "coming_soon": "Spelet kommer snart...",
@@ -30,6 +30,7 @@
     "error_title": "Problem",
     "incorrect_title": "Felaktigt",
     "win_title": "Vinst!",
-    "status_title": "Status"
+    "status_title": "Status",
+    "note_mode": "Anteckningsläge"
   }
 }

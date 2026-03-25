@@ -30,6 +30,7 @@
     "error_title": "Problem",
     "incorrect_title": "Incorrect",
     "win_title": "You Win!",
-    "status_title": "Status"
+    "status_title": "Status",
+    "note_mode": "Note Mode"
   }
 }

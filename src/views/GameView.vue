@@ -19,6 +19,8 @@ type Difficulty = 'easy' | 'medium' | 'hard'
 const difficulty = ref<Difficulty | null>(null)
 const board = ref<(number | null)[]>([])
 const initialBoard = ref<(number | null)[]>([])
+const notes = ref<number[][]>(Array.from({ length: 81 }, () => []))
+const noteMode = ref(false)
 const isGameActive = ref(false)
 
 // Modal State
@@ -104,7 +106,8 @@ const saveSession = () => {
       difficulty: difficulty.value,
       board: board.value,
       initialBoard: initialBoard.value,
-      seconds: seconds.value
+      seconds: seconds.value,
+      notes: notes.value
     }
     localStorage.setItem('sudoku-active-session', JSON.stringify(session))
   }
@@ -119,29 +122,24 @@ const loadSession = () => {
   if (saved) {
     try {
       const session = JSON.parse(saved)
-      if (route.query.resume === 'true') {
+      const restoreSession = () => {
         difficulty.value = session.difficulty
         board.value = session.board
         initialBoard.value = session.initialBoard
         seconds.value = session.seconds
+        notes.value = session.notes ?? Array.from({ length: 81 }, () => [])
         isGameActive.value = true
         startTimer(true)
+      }
+      if (route.query.resume === 'true') {
+        restoreSession()
       } else {
         showModal({
           title: t('game.resume_title'),
           message: t('game.resume_prompt'),
           isConfirm: true,
-          onConfirm: () => {
-            difficulty.value = session.difficulty
-            board.value = session.board
-            initialBoard.value = session.initialBoard
-            seconds.value = session.seconds
-            isGameActive.value = true
-            startTimer(true)
-          },
-          onCancel: () => {
-            clearSession()
-          }
+          onConfirm: restoreSession,
+          onCancel: clearSession
         })
       }
     } catch (e) {
@@ -209,6 +207,8 @@ const startNewGame = (level: Difficulty) => {
 
   board.value = puzzle.map((v: number | null) => v !== null ? v + 1 : null)
   initialBoard.value = [...board.value]
+  notes.value = Array.from({ length: 81 }, () => [])
+  noteMode.value = false
   isGameActive.value = true
   startTimer()
 }
@@ -268,6 +268,7 @@ const solveGame = () => {
   const currentBoard = initialBoard.value.map(v => v !== null ? v - 1 : null)
   const solved = sudoku.solvepuzzle(currentBoard)
   board.value = solved.map((v: number) => v + 1)
+  notes.value = Array.from({ length: 81 }, () => [])
 }
 </script>
 
@@ -304,12 +305,24 @@ const solveGame = () => {
               </span>
             </div>
           </div>
-          <div class="header-spacer"></div>
+          <button
+            @click="noteMode = !noteMode"
+            class="btn-icon pencil-btn"
+            :class="{ 'pencil-active': noteMode }"
+            :aria-label="$t('game.note_mode')"
+            :title="$t('game.note_mode')"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+          </button>
         </div>
 
         <SudokuBoard
           v-model:board="board"
+          v-model:notes="notes"
           :initial-board="initialBoard"
+          :note-mode="noteMode"
         />
 
         <div class="game-footer">
@@ -424,9 +437,23 @@ const solveGame = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.2s ease;
 }
 
-.header-spacer { width: 40px; }
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.pencil-btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pencil-active {
+  background: rgba(147, 197, 253, 0.25) !important;
+  border-color: rgba(147, 197, 253, 0.6) !important;
+  color: #93c5fd !important;
+  box-shadow: 0 0 10px rgba(147, 197, 253, 0.3);
+}
 
 .game-footer {
   margin-top: 2rem;
