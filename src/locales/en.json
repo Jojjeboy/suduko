@@ -17,6 +17,11 @@
     "incorrect": "Some numbers are incorrect!",
     "unsolvable": "The current board is incorrect or unsolvable.",
     "congratulations": "Congratulations! You solved it!",
-    "looking_good": "Looking good so far!"
+    "looking_good": "Looking good so far!",
+    "best_time": "Best Time",
+    "current_time": "Time",
+    "no_record": "No record yet",
+    "scoreboard": "Scoreboard",
+    "new_record": "New Record!"
   }
 }

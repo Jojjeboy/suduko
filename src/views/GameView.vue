@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 // Using a more robust import for the sudoku library
@@ -18,6 +18,65 @@ const difficulty = ref<Difficulty | null>(null)
 const board = ref<(number | null)[]>([])
 const initialBoard = ref<(number | null)[]>([])
 const isGameActive = ref(false)
+
+// Timer and Scoreboard
+const seconds = ref(0)
+let timerInterval: number | null = null
+const bestTimes = ref<Record<Difficulty, number | null>>({
+  easy: null,
+  medium: null,
+  hard: null
+})
+
+const formatTime = (totalSeconds: number) => {
+  const mins = Math.floor(totalSeconds / 60)
+  const secs = totalSeconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+const loadBestTimes = () => {
+  const saved = localStorage.getItem('sudoku-best-times')
+  if (saved) {
+    try {
+      bestTimes.value = JSON.parse(saved)
+    } catch (e) {
+      console.error('Failed to parse best times', e)
+    }
+  }
+}
+
+const saveBestTime = (level: Difficulty, time: number) => {
+  const currentBest = bestTimes.value[level]
+  if (currentBest === null || time < currentBest) {
+    bestTimes.value[level] = time
+    localStorage.setItem('sudoku-best-times', JSON.stringify(bestTimes.value))
+    return true
+  }
+  return false
+}
+
+const startTimer = () => {
+  stopTimer()
+  seconds.value = 0
+  timerInterval = window.setInterval(() => {
+    seconds.value++
+  }, 1000)
+}
+
+const stopTimer = () => {
+  if (timerInterval) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+}
+
+onMounted(() => {
+  loadBestTimes()
+})
+
+onUnmounted(() => {
+  stopTimer()
+})
 
 const goBack = () => {
   if (isGameActive.value) {
@@ -51,6 +110,7 @@ const startNewGame = (level: Difficulty) => {
   board.value = puzzle.map((v: number | null) => v !== null ? v + 1 : null)
   initialBoard.value = [...board.value]
   isGameActive.value = true
+  startTimer()
 }
 
 const checkGame = () => {
@@ -67,7 +127,13 @@ const checkGame = () => {
   if (!isCorrectSoFar) {
     alert(t('game.incorrect'))
   } else if (board.value.every(v => v !== null)) {
-    alert(t('game.congratulations'))
+    stopTimer()
+    const isNewRecord = saveBestTime(difficulty.value!, seconds.value)
+    if (isNewRecord) {
+      alert(`${t('game.congratulations')} ${t('game.new_record')} (${formatTime(seconds.value)})`)
+    } else {
+      alert(`${t('game.congratulations')} (${formatTime(seconds.value)})`)
+    }
     isGameActive.value = false
   } else {
     alert(t('game.looking_good'))
@@ -105,7 +171,15 @@ const solveGame = () => {
       <div v-else class="active-game">
         <div class="game-header">
           <button @click="goBack" class="btn-icon" aria-label="Back">←</button>
-          <h2>{{ $t(`game.${difficulty}`) }}</h2>
+          <div class="header-center">
+            <h2>{{ $t(`game.${difficulty}`) }}</h2>
+            <div class="timer-info">
+              <span class="current-timer">{{ formatTime(seconds) }}</span>
+              <span v-if="bestTimes[difficulty!] !== null" class="best-timer">
+                Best: {{ formatTime(bestTimes[difficulty!]!) }}
+              </span>
+            </div>
+          </div>
           <div class="header-spacer"></div>
         </div>
         
@@ -167,7 +241,38 @@ const solveGame = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header-center h2 {
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+}
+
+.timer-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.current-timer {
+  font-family: monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.best-timer {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
 }
 
 .btn-icon {

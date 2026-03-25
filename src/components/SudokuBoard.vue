@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps<{
   board: (number | null)[] // 81 length array, null for empty
@@ -13,12 +13,14 @@ const emit = defineEmits<{
 
 const localBoard = ref([...props.board])
 const selectedNumber = ref<number | null>(null)
+const selectedIndex = ref<number | null>(null)
 
 watch(() => props.board, (newBoard) => {
   localBoard.value = [...newBoard]
 }, { deep: true })
 
 const selectCell = (index: number) => {
+  selectedIndex.value = index
   const value = localBoard.value[index]
   if (typeof value === 'number') {
     selectedNumber.value = value
@@ -27,22 +29,33 @@ const selectCell = (index: number) => {
   }
 }
 
-const handleInput = (index: number, event: Event) => {
-  const target = event.target as HTMLInputElement
-  const value = target.value
-  
-  // Only allow 1-9
-  if (/^[1-9]$/.test(value)) {
-    localBoard.value[index] = parseInt(value)
-    selectedNumber.value = localBoard.value[index]
-  } else {
-    localBoard.value[index] = null
-    target.value = ''
-    selectedNumber.value = null
+const fillNumber = (num: number | null) => {
+  if (selectedIndex.value !== null && !isInitial(selectedIndex.value)) {
+    localBoard.value[selectedIndex.value] = num
+    selectedNumber.value = num
+    emit('update:board', [...localBoard.value])
   }
-  
-  emit('update:board', [...localBoard.value])
 }
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (selectedIndex.value === null || isInitial(selectedIndex.value)) return
+  
+  const key = event.key
+  if (/^[1-9]$/.test(key)) {
+    fillNumber(parseInt(key))
+  } else if (key === 'Backspace' || key === 'Delete') {
+    fillNumber(null)
+  }
+}
+
+// Global keyboard listener
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+})
 
 const isInitial = (index: number) => {
   return props.initialBoard[index] !== null
@@ -50,29 +63,38 @@ const isInitial = (index: number) => {
 </script>
 
 <template>
-  <div class="sudoku-grid">
-    <div 
-      v-for="(cell, index) in localBoard" 
-      :key="index" 
-      class="sudoku-cell"
-      :class="{
-        'border-right': (index + 1) % 3 === 0 && (index + 1) % 9 !== 0,
-        'border-bottom': Math.floor(index / 9) % 3 === 2 && Math.floor(index / 9) !== 8,
-        'initial-cell': isInitial(index),
-        'highlighted': cell !== null && cell === selectedNumber
-      }"
-      @click="selectCell(index)"
-    >
-      <input
-        v-if="!isInitial(index)"
-        type="text"
-        :value="cell || ''"
-        @input="handleInput(index, $event)"
-        @focus="selectCell(index)"
-        maxlength="1"
-        inputmode="numeric"
-      />
-      <span v-else>{{ cell }}</span>
+  <div class="sudoku-container">
+    <div class="sudoku-grid">
+      <div 
+        v-for="(cell, index) in localBoard" 
+        :key="index" 
+        class="sudoku-cell"
+        :class="{
+          'border-right': (index + 1) % 3 === 0 && (index + 1) % 9 !== 0,
+          'border-bottom': Math.floor(index / 9) % 3 === 2 && Math.floor(index / 9) !== 8,
+          'initial-cell': isInitial(index),
+          'highlighted': cell !== null && cell === selectedNumber,
+          'selected': index === selectedIndex
+        }"
+        @click="selectCell(index)"
+      >
+        <span v-if="isInitial(index)">{{ cell }}</span>
+        <span v-else class="user-number" :class="{ 'empty': !cell }">
+          {{ cell || '' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="number-pad">
+      <button 
+        v-for="num in 9" 
+        :key="num" 
+        @click="fillNumber(num)"
+        class="pad-btn"
+      >
+        {{ num }}
+      </button>
+      <button @click="fillNumber(null)" class="pad-btn clear-btn">✕</button>
     </div>
   </div>
 </template>
@@ -111,21 +133,57 @@ const isInitial = (index: number) => {
   border-bottom: 2px solid rgba(255, 255, 255, 0.4);
 }
 
-.sudoku-cell input {
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  text-align: center;
-  color: #60a5fa; /* User input color - slightly lighter blue */
-  font-size: 1.25rem;
-  font-weight: 700;
-  outline: none;
-  padding: 0;
+.sudoku-cell.selected {
+  background: rgba(59, 130, 246, 0.4);
 }
 
-.sudoku-cell input:focus {
-  background: rgba(59, 130, 246, 0.2);
+.user-number {
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.number-pad {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 450px;
+}
+
+.pad-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.pad-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.pad-btn:active {
+  transform: translateY(0);
+}
+
+.clear-btn {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.clear-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
 }
 
 .initial-cell {

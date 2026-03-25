@@ -17,6 +17,11 @@
     "incorrect": "Vissa siffror är felaktiga!",
     "unsolvable": "Det nuvarande brädet är felaktigt eller går inte att lösa.",
     "congratulations": "Grattis! Du löste det!",
-    "looking_good": "Det ser bra ut än så länge!"
+    "looking_good": "Det ser bra ut än så länge!",
+    "best_time": "Bästa tid",
+    "current_time": "Tid",
+    "no_record": "Inget rekord än",
+    "scoreboard": "Resultatlista",
+    "new_record": "Nytt rekord!"
   }
 }

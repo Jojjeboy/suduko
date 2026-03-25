@@ -3,6 +3,7 @@
 A minimalist Sudoku game built with Vue 3 and Vite.
 
 ## Features
+
 - Save game state to `localStorage`.
 - Progressive Web App (PWA) support.
 
@@ -40,4 +41,4 @@ npm run lint
 
 - Scoreboard, time on each level
 - Touch device numbers / disable keyboard input
-- Make sure 
+- Make sure the game can be continued after closing the browser
