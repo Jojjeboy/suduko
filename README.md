@@ -35,3 +35,9 @@ npm run test:unit
 ```sh
 npm run lint
 ```
+
+# TODO
+
+- Scoreboard, time on each level
+- Touch device numbers / disable keyboard input
+- Make sure 
