@@ -22,6 +22,8 @@
     "current_time": "Time",
     "no_record": "No record yet",
     "scoreboard": "Scoreboard",
-    "new_record": "New Record!"
+    "new_record": "New Record!",
+    "resume_prompt": "Do you want to continue your last game?",
+    "resume_title": "Resume Game"
   }
 }

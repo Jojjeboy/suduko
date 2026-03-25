@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 // Using a more robust import for the sudoku library
 import * as sudokuModule from 'sudoku'
@@ -8,6 +8,7 @@ import SudokuBoard from '@/components/SudokuBoard.vue'
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 
 // Handle potentially different bundle formats for the sudoku library
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,11 +56,52 @@ const saveBestTime = (level: Difficulty, time: number) => {
   return false
 }
 
-const startTimer = () => {
+// Session Management
+const saveSession = () => {
+  if (isGameActive.value && difficulty.value) {
+    const session = {
+      difficulty: difficulty.value,
+      board: board.value,
+      initialBoard: initialBoard.value,
+      seconds: seconds.value
+    }
+    localStorage.setItem('sudoku-active-session', JSON.stringify(session))
+  }
+}
+
+const clearSession = () => {
+  localStorage.removeItem('sudoku-active-session')
+}
+
+const loadSession = () => {
+  const saved = localStorage.getItem('sudoku-active-session')
+  if (saved) {
+    try {
+      const session = JSON.parse(saved)
+      const shouldResume = route.query.resume === 'true' || confirm(t('game.resume_prompt'))
+      if (shouldResume) {
+        difficulty.value = session.difficulty
+        board.value = session.board
+        initialBoard.value = session.initialBoard
+        seconds.value = session.seconds
+        isGameActive.value = true
+        startTimer(true) // Start timer without resetting seconds
+      } else {
+        clearSession()
+      }
+    } catch (e) {
+      console.error('Failed to parse active session', e)
+      clearSession()
+    }
+  }
+}
+
+const startTimer = (resume = false) => {
   stopTimer()
-  seconds.value = 0
+  if (!resume) seconds.value = 0
   timerInterval = window.setInterval(() => {
     seconds.value++
+    saveSession() // Save session every second (or we can just save on board change)
   }, 1000)
 }
 
@@ -72,6 +114,7 @@ const stopTimer = () => {
 
 onMounted(() => {
   loadBestTimes()
+  loadSession()
 })
 
 onUnmounted(() => {
@@ -87,6 +130,8 @@ const goBack = () => {
 }
 
 const startNewGame = (level: Difficulty) => {
+  // If there's an active session of a different level, clear it
+  clearSession()
   difficulty.value = level
   
   let puzzle: (number | null)[]
@@ -113,6 +158,13 @@ const startNewGame = (level: Difficulty) => {
   startTimer()
 }
 
+// Watch for board changes to save session
+watch(board, () => {
+  if (isGameActive.value) {
+    saveSession()
+  }
+}, { deep: true })
+
 const checkGame = () => {
   const currentBoard = board.value.map(v => v !== null ? v - 1 : null)
   const solved = sudoku.solvepuzzle(currentBoard)
@@ -128,6 +180,7 @@ const checkGame = () => {
     alert(t('game.incorrect'))
   } else if (board.value.every(v => v !== null)) {
     stopTimer()
+    clearSession() // Clear session on win
     const isNewRecord = saveBestTime(difficulty.value!, seconds.value)
     if (isNewRecord) {
       alert(`${t('game.congratulations')} ${t('game.new_record')} (${formatTime(seconds.value)})`)

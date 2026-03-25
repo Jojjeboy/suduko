@@ -22,6 +22,8 @@
     "current_time": "Tid",
     "no_record": "Inget rekord än",
     "scoreboard": "Resultatlista",
-    "new_record": "Nytt rekord!"
+    "new_record": "Nytt rekord!",
+    "resume_prompt": "Vill du fortsätta där du slutade?",
+    "resume_title": "Fortsätt spela"
   }
 }

@@ -12,22 +12,27 @@ export default defineConfig({
     vueDevTools(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo.png', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'logo.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Sudoku',
+        name: 'Sudoku Master',
         short_name: 'Sudoku',
-        description: 'A minimalist Sudoku game',
-        theme_color: '#ffffff',
+        description: 'A premium, modern Sudoku experience for everyone.',
+        theme_color: '#0f172a',
+        background_color: '#0f172a',
+        display: 'standalone',
+        orientation: 'portrait',
         icons: [
           {
             src: 'img/icons/pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any maskable'
           },
           {
             src: 'img/icons/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
+            purpose: 'any maskable'
           },
         ],
       },

@@ -5,9 +5,9 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const bestTimes = ref<Record<string, number | null>>({
   easy: null,
-  medium: null,
   hard: null
 })
+const hasActiveSession = ref(false)
 
 const formatTime = (totalSeconds: number | null) => {
   if (totalSeconds === null) return '--:--'
@@ -25,7 +25,16 @@ onMounted(() => {
       console.error('Failed to parse best times', e)
     }
   }
+
+  const activeSession = localStorage.getItem('sudoku-active-session')
+  if (activeSession) {
+    hasActiveSession.value = true
+  }
 })
+
+const resumeGame = () => {
+  router.push('/play?resume=true')
+}
 
 const startGame = () => {
   router.push('/play')
@@ -39,6 +48,9 @@ const startGame = () => {
       <p class="subtitle">{{ $t('welcome.subtitle') }}</p>
       
       <div class="welcome-actions">
+        <button v-if="hasActiveSession" @click="resumeGame" class="btn btn-secondary resume-btn">
+          {{ $t('game.resume_title') }}
+        </button>
         <button @click="startGame" class="btn btn-primary start-btn">
           {{ $t('welcome.start_game') }}
         </button>
@@ -106,6 +118,25 @@ h1 {
 .start-btn:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.resume-btn {
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  width: 100%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.resume-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
 }
 
 .scoreboard {
