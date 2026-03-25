@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 // Using a more robust import for the sudoku library
 import * as sudokuModule from 'sudoku'
 import SudokuBoard from '@/components/SudokuBoard.vue'
+import BaseModal from '@/components/BaseModal.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -19,6 +20,46 @@ const difficulty = ref<Difficulty | null>(null)
 const board = ref<(number | null)[]>([])
 const initialBoard = ref<(number | null)[]>([])
 const isGameActive = ref(false)
+
+// Modal State
+const modalConfig = ref({
+  show: false,
+  title: '',
+  message: '',
+  confirmText: '',
+  cancelText: '',
+  isConfirm: false,
+  onConfirm: () => {},
+  onCancel: () => {}
+})
+
+const showModal = (config: Partial<typeof modalConfig.value>) => {
+  modalConfig.value = {
+    ...modalConfig.value,
+    show: true,
+    title: config.title || '',
+    message: config.message || '',
+    confirmText: config.confirmText || t('game.ok') || 'OK',
+    cancelText: config.cancelText || t('game.cancel') || 'Cancel',
+    isConfirm: config.isConfirm || false,
+    onConfirm: config.onConfirm || (() => {}),
+    onCancel: config.onCancel || (() => {})
+  }
+}
+
+const closeModal = () => {
+  modalConfig.value.show = false
+}
+
+const handleModalConfirm = () => {
+  modalConfig.value.onConfirm()
+  closeModal()
+}
+
+const handleModalCancel = () => {
+  modalConfig.value.onCancel()
+  closeModal()
+}
 
 // Timer and Scoreboard
 const seconds = ref(0)
@@ -78,16 +119,30 @@ const loadSession = () => {
   if (saved) {
     try {
       const session = JSON.parse(saved)
-      const shouldResume = route.query.resume === 'true' || confirm(t('game.resume_prompt'))
-      if (shouldResume) {
+      if (route.query.resume === 'true') {
         difficulty.value = session.difficulty
         board.value = session.board
         initialBoard.value = session.initialBoard
         seconds.value = session.seconds
         isGameActive.value = true
-        startTimer(true) // Start timer without resetting seconds
+        startTimer(true)
       } else {
-        clearSession()
+        showModal({
+          title: t('game.resume_title'),
+          message: t('game.resume_prompt'),
+          isConfirm: true,
+          onConfirm: () => {
+            difficulty.value = session.difficulty
+            board.value = session.board
+            initialBoard.value = session.initialBoard
+            seconds.value = session.seconds
+            isGameActive.value = true
+            startTimer(true)
+          },
+          onCancel: () => {
+            clearSession()
+          }
+        })
       }
     } catch (e) {
       console.error('Failed to parse active session', e)
@@ -170,26 +225,42 @@ const checkGame = () => {
   const solved = sudoku.solvepuzzle(currentBoard)
   
   if (!solved) {
-    alert(t('game.unsolvable'))
+    showModal({
+      title: t('game.error_title') || 'Error',
+      message: t('game.unsolvable')
+    })
     return
   }
   
   const isCorrectSoFar = currentBoard.every((v, i) => v === null || v === solved[i])
   
   if (!isCorrectSoFar) {
-    alert(t('game.incorrect'))
+    showModal({
+      title: t('game.incorrect_title') || 'Sudoku',
+      message: t('game.incorrect')
+    })
   } else if (board.value.every(v => v !== null)) {
     stopTimer()
     clearSession() // Clear session on win
     const isNewRecord = saveBestTime(difficulty.value!, seconds.value)
+    
+    let message = t('game.congratulations')
     if (isNewRecord) {
-      alert(`${t('game.congratulations')} ${t('game.new_record')} (${formatTime(seconds.value)})`)
+      message += ` ${t('game.new_record')} (${formatTime(seconds.value)})`
     } else {
-      alert(`${t('game.congratulations')} (${formatTime(seconds.value)})`)
+      message += ` (${formatTime(seconds.value)})`
     }
+    
+    showModal({
+      title: t('game.win_title') || 'Congratulations!',
+      message: message
+    })
     isGameActive.value = false
   } else {
-    alert(t('game.looking_good'))
+    showModal({
+      title: t('game.status_title') || 'Sudoku',
+      message: t('game.looking_good')
+    })
   }
 }
 
@@ -254,6 +325,19 @@ const solveGame = () => {
         </div>
       </div>
     </div>
+
+    <!-- Custom Modal -->
+    <BaseModal
+      :show="modalConfig.show"
+      :title="modalConfig.title"
+      :message="modalConfig.message"
+      :confirm-text="modalConfig.confirmText"
+      :cancel-text="modalConfig.cancelText"
+      :is-confirm="modalConfig.isConfirm"
+      @confirm="handleModalConfirm"
+      @cancel="handleModalCancel"
+      @close="closeModal"
+    />
   </main>
 </template>
 

@@ -24,6 +24,12 @@
     "scoreboard": "Resultatlista",
     "new_record": "Nytt rekord!",
     "resume_prompt": "Vill du fortsätta där du slutade?",
-    "resume_title": "Fortsätt spela"
+    "resume_title": "Fortsätt spela",
+    "ok": "OK",
+    "cancel": "Avbryt",
+    "error_title": "Problem",
+    "incorrect_title": "Felaktigt",
+    "win_title": "Vinst!",
+    "status_title": "Status"
   }
 }

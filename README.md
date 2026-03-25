@@ -38,8 +38,3 @@ npm run lint
 ```
 
 # TODO
-
--
-- Make sure the game can be continued after closing the browser
-- Make sure the app act as a pwa with all bells and whizzles and generate a suiting favicon/app icon for this suduko game
-- Replace all popup dialogs with modals and make them look good in the current design language

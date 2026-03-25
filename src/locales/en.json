@@ -24,6 +24,12 @@
     "scoreboard": "Scoreboard",
     "new_record": "New Record!",
     "resume_prompt": "Do you want to continue your last game?",
-    "resume_title": "Resume Game"
+    "resume_title": "Resume Game",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "error_title": "Problem",
+    "incorrect_title": "Incorrect",
+    "win_title": "You Win!",
+    "status_title": "Status"
   }
 }
