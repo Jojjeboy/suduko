@@ -1,0 +1,22 @@
+{
+  "welcome": {
+    "title": "Sudoku",
+    "subtitle": "Test your mind with the ultimate number puzzle.",
+    "start_game": "Start Game"
+  },
+  "game": {
+    "select_difficulty": "Select Difficulty",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "back_to_home": "Back to Home",
+    "check_board": "Check Board",
+    "solve": "Solve",
+    "new_game": "New Game",
+    "coming_soon": "Game implementation coming soon...",
+    "incorrect": "Some numbers are incorrect!",
+    "unsolvable": "The current board is incorrect or unsolvable.",
+    "congratulations": "Congratulations! You solved it!",
+    "looking_good": "Looking good so far!"
+  }
+}

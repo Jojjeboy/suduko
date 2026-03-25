@@ -1,0 +1,22 @@
+{
+  "welcome": {
+    "title": "Sudoku",
+    "subtitle": "Testa ditt sinne med det ultimata sifferpusslet.",
+    "start_game": "Starta spelet"
+  },
+  "game": {
+    "select_difficulty": "Välj svårighetsgrad",
+    "easy": "Lätt",
+    "medium": "Medel",
+    "hard": "Svår",
+    "back_to_home": "Tillbaka till start",
+    "check_board": "Kontrollera brädet",
+    "solve": "Lös",
+    "new_game": "Nytt spel",
+    "coming_soon": "Spelet kommer snart...",
+    "incorrect": "Vissa siffror är felaktiga!",
+    "unsolvable": "Det nuvarande brädet är felaktigt eller går inte att lösa.",
+    "congratulations": "Grattis! Du löste det!",
+    "looking_good": "Det ser bra ut än så länge!"
+  }
+}
